@@ -1,10 +1,9 @@
 use std::fs::{create_dir_all, File};
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
+use std::path::Path;
+
 use std::{io, thread};
 
 use reqwest::StatusCode;
-use serde::{Deserialize, Serialize};
 
 pub fn download_file(url: &str, path: &str) {
     create_dir_all(path).unwrap();
@@ -46,7 +45,6 @@ pub fn download_files_single(download: &Vec<(String, String)>) {
     }
 }
 
-
 pub fn download_files_concurrent(download: &Vec<(String, String)>) {
     let workers: usize = 4;
     let chunks = download.chunks(workers);
@@ -63,6 +61,6 @@ pub fn download_files_concurrent(download: &Vec<(String, String)>) {
         }));
     }
     for thread in threads {
-        thread.join();
+        thread.join().expect("Can't download files");
     }
 }

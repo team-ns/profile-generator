@@ -1,8 +1,8 @@
-use std::path::{Path, PathBuf};
 use crate::artifact::Artifact;
-use anyhow::Result;
-use crate::minecraft::libraries::File as LibraryFile;
 use crate::minecraft::assets::Assets;
+use crate::minecraft::libraries::File as LibraryFile;
+use anyhow::Result;
+use std::path::Path;
 
 pub fn jar_url(base_path: &Path, file: &LibraryFile) -> (String, String) {
     let url = file.url.clone();
@@ -33,5 +33,6 @@ pub fn get_yarn_url(version: &str) -> String {
 pub fn get_yarn_path(version: &str) -> String {
     format!(
         "net/fabricmc/intermediary/{ver}/intermediary-{ver}.jar",
-        ver = version)
+        ver = version
+    )
 }

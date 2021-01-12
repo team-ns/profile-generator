@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
-use anyhow::{Result, Error};
-use std::str::FromStr;
 use crate::minecraft::version::NameLibrary;
+use anyhow::{Error, Result};
+use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 #[derive(Deserialize, Serialize)]
 pub struct FabricLoaderManifest {
@@ -21,7 +21,6 @@ pub struct FabricLibraries {
     pub client: Vec<NameLibrary>,
     pub common: Vec<NameLibrary>,
 }
-
 
 impl FromStr for FabricLoaderManifest {
     type Err = Error;

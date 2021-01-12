@@ -1,7 +1,7 @@
+use crate::minecraft::libraries::{AssetIndex, Downloads, Library};
+use anyhow::{Error, Result};
 use serde::{Deserialize, Serialize};
-use anyhow::{Result, Error};
 use std::str::FromStr;
-use crate::minecraft::libraries::{Downloads, AssetIndex, Library};
 
 #[derive(Serialize, Deserialize)]
 pub struct VersionManifest {
@@ -49,12 +49,15 @@ impl FromStr for Libraries {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let manifest = reqwest::blocking::get("https://launchermeta.mojang.com/mc/game/version_manifest.json")?
-            .json::<VersionManifest>()?;
-        let version = manifest.versions.iter()
-            .find(|v| {
-                v.id.eq(s)
-            }).ok_or(anyhow::anyhow!("Incorrect minecraft version"))?;
+        let manifest = reqwest::blocking::get(
+            "https://launchermeta.mojang.com/mc/game/version_manifest.json",
+        )?
+        .json::<VersionManifest>()?;
+        let version = manifest
+            .versions
+            .iter()
+            .find(|v| v.id.eq(s))
+            .ok_or(anyhow::anyhow!("Incorrect minecraft version"))?;
         let libs = reqwest::blocking::get(&version.url)?.json::<Libraries>()?;
         Ok(libs)
     }

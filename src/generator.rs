@@ -1,33 +1,39 @@
+use crate::download::{download_file, download_files_concurrent, download_files_single};
+use crate::minecraft::forge::LibraryType;
 use crate::minecraft::version::Libraries;
 use crate::minecraft::GameType;
-use std::collections::HashSet;
 use crate::minecraft::GameType::{Fabric, Forge};
-use crate::util::{generate_lib_path, generate_download_url, get_yarn_url, get_yarn_path, jar_url};
-use crate::download::{download_file, download_files_single, download_files_concurrent};
-use crate::minecraft::forge::LibraryType;
-use std::fs::{create_dir_all, File, remove_dir_all};
+use crate::util::{generate_download_url, generate_lib_path, get_yarn_path, get_yarn_url, jar_url};
+use anyhow::Result;
+use launcher_api::profile::Profile;
+use std::collections::HashSet;
+use std::fs::{create_dir_all, remove_dir_all, File};
+use std::io;
+use std::iter::FromIterator;
 use std::path::PathBuf;
 use walkdir::WalkDir;
-use std::io;
-use launcher_api::profile::Profile;
-use std::iter::FromIterator;
 use zip::ZipArchive;
 
-pub fn generate_profile(name: &str, version: &str, manifest: Libraries, address: &str, port: u32, game_type: GameType) {
+pub fn generate_profile(
+    name: &str,
+    version: &str,
+    manifest: Libraries,
+    address: &str,
+    port: u32,
+    game_type: GameType,
+) -> Result<()> {
     let base = PathBuf::from(name);
-    let native_folder = &base
-        .join("natives")
-        .join(version);
+    let native_folder = &base.join("natives").join(version);
     let assets_folder = &base.join("assets");
     let profile_folder = &base.join(name);
     let libraries_folder = base.join("libraries");
     let mut client_args = Vec::new();
     let mut main_class = "net/minecraft/client/main/Main".to_string();
     let mut classpath = Vec::new();
-    std::fs::create_dir_all(&native_folder);
-    std::fs::create_dir_all(&assets_folder);
-    std::fs::create_dir_all(&profile_folder);
-    std::fs::create_dir_all(&libraries_folder);
+    std::fs::create_dir_all(&native_folder)?;
+    std::fs::create_dir_all(&assets_folder)?;
+    std::fs::create_dir_all(&profile_folder)?;
+    std::fs::create_dir_all(&libraries_folder)?;
     log::info!("Download assets...");
     let assets = crate::util::get_assets(&manifest.asset_index.url).unwrap();
     let objects_path = assets_folder.join("objects");
@@ -45,7 +51,7 @@ pub fn generate_profile(name: &str, version: &str, manifest: Libraries, address:
     }
     download_files_single(&assets_download);
     download_file(
-       &manifest.asset_index.url,
+        &manifest.asset_index.url,
         assets_folder.join("indexes").to_str().unwrap(),
     );
     log::info!("Download client...");
@@ -56,7 +62,7 @@ pub fn generate_profile(name: &str, version: &str, manifest: Libraries, address:
     std::fs::rename(
         profile_folder.join("client.jar").as_path(),
         profile_folder.join("minecraft.jar").as_path(),
-    );
+    )?;
     classpath.push("minecraft.jar".to_string());
     log::info!("Download libs...");
     let mut profile_lib_paths = HashSet::new();
@@ -198,7 +204,7 @@ pub fn generate_profile(name: &str, version: &str, manifest: Libraries, address:
     }
     log::info!("Download natives...");
     let temp_natives = base.join("natives_temp");
-    create_dir_all(&temp_natives);
+    create_dir_all(&temp_natives)?;
     let natives = manifest
         .libraries
         .iter()
@@ -253,16 +259,16 @@ pub fn generate_profile(name: &str, version: &str, manifest: Libraries, address:
                         || file.name().ends_with(".dylib")
                     {
                         if let Ok(mut outfile) =
-                        File::create(native_folder.join(&file.sanitized_name()))
+                            File::create(native_folder.join(&file.mangled_name()))
                         {
-                            io::copy(&mut file, &mut outfile);
+                            io::copy(&mut file, &mut outfile)?;
                         }
                     }
                 }
             }
         }
     }
-    remove_dir_all(temp_natives);
+    remove_dir_all(temp_natives)?;
     log::info!("Generate json profile...");
     serde_json::to_writer_pretty(
         File::create(profile_folder.join(format!("profile.json"))).unwrap(),
@@ -279,7 +285,8 @@ pub fn generate_profile(name: &str, version: &str, manifest: Libraries, address:
             assets: manifest.asset_index.id,
             assets_dir: "assets".to_string(),
             server_name: address.to_string(),
-            server_port: port
+            server_port: port,
         },
-    );
+    )?;
+    Ok(())
 }

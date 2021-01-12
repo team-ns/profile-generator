@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
-use anyhow::{Result, Error};
-use std::str::FromStr;
-use crate::minecraft::version::NameLibrary;
 use crate::minecraft::libraries::Library;
+use crate::minecraft::version::NameLibrary;
+use anyhow::{Error, Result};
+use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 #[derive(Deserialize, Serialize)]
 pub struct ForgeManifest {

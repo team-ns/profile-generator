@@ -1,15 +1,15 @@
-mod validator;
-mod minecraft;
 mod artifact;
-mod util;
 mod download;
 mod generator;
+mod minecraft;
+mod util;
+mod validator;
 
 use clap::{App, Arg};
-use crate::validator::correct_forge_version;
-use crate::minecraft::version::Libraries;
+
 use crate::minecraft::fabric::FabricLoaderManifest;
 use crate::minecraft::forge::ForgeManifest;
+use crate::minecraft::version::Libraries;
 use crate::minecraft::GameType;
 
 fn main() {
@@ -24,7 +24,7 @@ fn main() {
                 .required(true)
                 .long("version")
                 .takes_value(true)
-                .about("Minecraft Version")
+                .about("Minecraft Version"),
         )
         .arg(
             Arg::new("profileName")
@@ -32,7 +32,7 @@ fn main() {
                 .required(true)
                 .long("name")
                 .takes_value(true)
-                .about("Profile name")
+                .about("Profile name"),
         )
         .arg(
             Arg::new("serverName")
@@ -40,7 +40,7 @@ fn main() {
                 .required(true)
                 .long("address")
                 .takes_value(true)
-                .about("Server address")
+                .about("Server address"),
         )
         .arg(
             Arg::new("serverPort")
@@ -48,7 +48,7 @@ fn main() {
                 .required(true)
                 .long("port")
                 .takes_value(true)
-                .about("Server port")
+                .about("Server port"),
         )
         .arg(
             Arg::new("forge")
@@ -56,7 +56,7 @@ fn main() {
                 .long("forge")
                 .takes_value(true)
                 .conflicts_with("fabric")
-                .validator(validator::correct_forge_version)
+                .validator(validator::correct_forge_version),
         )
         .arg(
             Arg::new("fabric")
@@ -64,14 +64,22 @@ fn main() {
                 .long("fabric")
                 .takes_value(true)
                 .conflicts_with("forge")
-                .validator(validator::correct_fabric_version)
+                .validator(validator::correct_fabric_version),
         )
         .get_matches();
-    let profile_name = matches.value_of("profileName").expect("Can't get profile name");
+    let profile_name = matches
+        .value_of("profileName")
+        .expect("Can't get profile name");
     let game_version = matches.value_of("version").expect("Can't get version");
-    let game_libraries = matches.value_of_t::<Libraries>("version").unwrap_or_else(|e| e.exit());
-    let address = matches.value_of("serverName").expect("Can't get server name");
-    let port = matches.value_of_t::<u32>("serverPort").unwrap_or_else(|e| e.exit());
+    let game_libraries = matches
+        .value_of_t::<Libraries>("version")
+        .unwrap_or_else(|e| e.exit());
+    let address = matches
+        .value_of("serverName")
+        .expect("Can't get server name");
+    let port = matches
+        .value_of_t::<u32>("serverPort")
+        .unwrap_or_else(|e| e.exit());
     let fabric = matches.value_of_t::<FabricLoaderManifest>("fabric");
     let forge = matches.value_of_t::<ForgeManifest>("forge");
     let game_type = if let Ok(manifest) = fabric {
@@ -81,5 +89,13 @@ fn main() {
     } else {
         GameType::Vanilla
     };
-    generator::generate_profile(profile_name, game_version, game_libraries, address, port, game_type);
+    generator::generate_profile(
+        profile_name,
+        game_version,
+        game_libraries,
+        address,
+        port,
+        game_type,
+    )
+    .expect("Can't generate profile");
 }

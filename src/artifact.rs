@@ -1,12 +1,7 @@
-use std::fs::{create_dir_all, File};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::str::FromStr;
-use std::{io, thread};
 
-use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-
-use crate::minecraft::libraries::File as LibraryFile;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Artifact {
