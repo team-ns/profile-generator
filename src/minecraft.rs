@@ -1,12 +1,11 @@
-use crate::minecraft::forge::ForgeManifest;
 use crate::minecraft::fabric::FabricLoaderManifest;
+use crate::minecraft::forge::ForgeManifest;
 
-pub mod version;
+pub mod assets;
 pub mod fabric;
 pub mod forge;
 pub mod libraries;
-pub mod assets;
-
+pub mod version;
 
 pub enum GameType {
     Vanilla,
